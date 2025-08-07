@@ -8,13 +8,14 @@ from aiogram.types import Message, FSInputFile
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
-from config import TOKEN6
+from config import TOKEN6, EXCHANGE_API_KEY
 
 from dotenv import load_dotenv
 import sqlite3
 import aiohttp
 import logging
 import os
+import requests
 
 from pyexpat.errors import messages
 
@@ -60,7 +61,7 @@ class FinancesForm(StatesGroup):
     category3 = State()
     expenses3 = State()
 
-@dp.message(CommandStart())
+@dp.message(Command('start'))
 async def send_start(message: Message):
     await message.answer("Привет! Я ваш личный финансовый помощник. Выберите одну из опций в меню:", reply_markup=keyboards)
 
@@ -68,7 +69,7 @@ async def send_start(message: Message):
 async def registration(message: Message):
     telegram_id = message.from_user.id
     name = message.from_user.full_name
-    cursor.execute('''SELECT * FROM users WHERE telegram_id = ?''', (telegram_id))
+    cursor.execute('''SELECT * FROM users WHERE telegram_id = ?''', (telegram_id,))
     user = cursor.fetchone()
     if user:
         await message.answer("Вы уже зарегистрированы!")
@@ -76,6 +77,26 @@ async def registration(message: Message):
         cursor.execute('''INSERT INTO users (telegram_id, name) VALUES (?, ?)''', (telegram_id, name))
         conn.commit()
         await message.answer("Вы успешно зарегистрированы!")
+
+@ dp.message(F.text == "Курс валют")
+async def exchange_rate(message: Message):
+    url = f"https://v6.exchangerate-api.com/v6/{EXCHANGE_API_KEY}/latest/USD"
+    try:
+        response = requests.get(url)
+        data = response.json()
+        if response.status_code != 200:
+            await message.answer("Не удалось получить данные о курсе валют!")
+            return
+        usd_to_rub = data["conversion_rates"]["RUB"]
+        eur_to_usd = data["conversion_rates"]["EUR"]
+
+        euro_to_rub = eur_to_usd * usd_to_rub
+
+        await message.answer(f"1 USD - {usd_to_rub:.2f} RUB\n"
+                             f"1 EUR - {euro_to_rub:.2f} RUB")
+
+    except:
+        await message.answer("Произошла ошибка")
 
 async def main():
     await dp.start_polling(bot)
