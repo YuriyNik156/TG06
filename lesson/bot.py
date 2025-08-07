@@ -8,7 +8,7 @@ from aiogram.types import Message, FSInputFile
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
-from config import TOKEN
+from config import TOKEN6
 
 from dotenv import load_dotenv
 import sqlite3
@@ -18,7 +18,7 @@ import os
 
 from pyexpat.errors import messages
 
-bot = Bot(token=TOKEN)
+bot = Bot(token=TOKEN6)
 dp = Dispatcher()
 
 logging.basicConfig(level=logging.INFO)
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS users (
     category3 TEXT,
     expenses1 REAL,
     expenses2 REAL,
-    expenses3 REAL,
+    expenses3 REAL
     )
 ''')
 
@@ -59,6 +59,23 @@ class FinancesForm(StatesGroup):
     expenses2 = State()
     category3 = State()
     expenses3 = State()
+
+@dp.message(CommandStart())
+async def send_start(message: Message):
+    await message.answer("Привет! Я ваш личный финансовый помощник. Выберите одну из опций в меню:", reply_markup=keyboards)
+
+@dp.message(F.text == "Регистрация в телеграм-боте")
+async def registration(message: Message):
+    telegram_id = message.from_user.id
+    name = message.from_user.full_name
+    cursor.execute('''SELECT * FROM users WHERE telegram_id = ?''', (telegram_id))
+    user = cursor.fetchone()
+    if user:
+        await message.answer("Вы уже зарегистрированы!")
+    else:
+        cursor.execute('''INSERT INTO users (telegram_id, name) VALUES (?, ?)''', (telegram_id, name))
+        conn.commit()
+        await message.answer("Вы успешно зарегистрированы!")
 
 async def main():
     await dp.start_polling(bot)
