@@ -1,25 +1,16 @@
 import asyncio
 import random
-
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
-
-from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
-from aiogram import Bot, Dispatcher, F
-from aiogram.filters import CommandStart, Command
-from aiogram.types import Message, FSInputFile
-from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import State, StatesGroup
-from aiogram.fsm.storage.memory import MemoryStorage
-from config import TOKEN6, EXCHANGE_API_KEY
-
-from dotenv import load_dotenv
-import sqlite3
-import aiohttp
 import logging
-import os
+import sqlite3
 import requests
 
-from pyexpat.errors import messages
+from aiogram import Bot, Dispatcher, F
+from aiogram.filters import Command
+from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
+
+from config import TOKEN6, EXCHANGE_API_KEY
 
 bot = Bot(token=TOKEN6)
 dp = Dispatcher()
