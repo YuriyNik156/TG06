@@ -1,4 +1,6 @@
 import asyncio
+import random
+
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
@@ -97,6 +99,18 @@ async def exchange_rate(message: Message):
 
     except:
         await message.answer("Произошла ошибка")
+
+@dp.message(F.text == "Советы по экономии")
+async def send_tips(message: Message):
+    tips = [
+        "Совет 1: Ведите бюджет и следите за своими расходами.",
+        "Совет 2: Откладывайте часть доходов на сбережения.",
+        "Совет 3: Покупайте товары по скидкам и распродажам."
+    ]
+    tip = random.choice(tips)
+    await message.answer(tip)
+
+
 
 async def main():
     await dp.start_polling(bot)
